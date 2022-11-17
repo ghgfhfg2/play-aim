@@ -43,14 +43,60 @@ import { PlayBox } from "@component/CommonStyled";
 import { SiTarget } from "react-icons/si";
 import shortid from "shortid";
 
-const TargetBox = styled.div`
+const TargetBox = styled.span`
   width: ${(props) => `${props.size}px`};
   height: ${(props) => `${props.size}px`};
   left: ${(props) => `${props.pos[0]}%`};
   top: ${(props) => `${props.pos[1]}%`};
   position: absolute;
+  display: inline-block;
   background: #555;
   border-radius: 50%;
+  animation: move_1 3s infinite alternate linear;
+  &:nth-of-type(2) {
+    animation: move_2 3s infinite alternate linear;
+  }
+  &:nth-of-type(3) {
+    animation: move_3 3s infinite alternate linear;
+  }
+  &:nth-of-type(4) {
+    animation: move_4 3s infinite alternate linear;
+  }
+  &:nth-of-type(5) {
+    animation: move_1 3s infinite alternate linear;
+  }
+  @keyframes move_1 {
+    from {
+      transform: translateX(100px);
+    }
+    to {
+      transform: translateX(-100px);
+    }
+  }
+  @keyframes move_2 {
+    from {
+      transform: translateY(100px);
+    }
+    to {
+      transform: translateY(-100px);
+    }
+  }
+  @keyframes move_3 {
+    from {
+      transform: translateX(-100px);
+    }
+    to {
+      transform: translateX(100px);
+    }
+  }
+  @keyframes move_4 {
+    from {
+      transform: translateY(-100px);
+    }
+    to {
+      transform: translateY(100px);
+    }
+  }
 `;
 
 export default function Main() {
@@ -59,7 +105,6 @@ export default function Main() {
   const dispatch = useDispatch();
   const userInfo = useSelector((state) => state.user.currentUser);
 
-  const targetRef = useRef();
   const gameBoxRef = useRef();
 
   const {
@@ -84,6 +129,12 @@ export default function Main() {
       let obj = {
         ...data.val(),
       };
+
+      let tArr = [];
+      for (const key in data.val()?.target) {
+        tArr.push(data.val().target[key]);
+      }
+      obj.target = tArr;
       let arr = [];
       for (const key in data.val()?.user) {
         arr.push({
@@ -151,15 +202,13 @@ export default function Main() {
   };
 
   //히트
-  const onTargetHit = (e) => {
-    console.log(e);
-    return;
+  const onTargetHit = (e, uid) => {
     targetHtiEffect(e);
     const hitRate = Math.round((1 / missCount) * 100);
     const userPath = `room/${roomData.uid}/user/${userInfo.uid}`;
     setMissCount(0);
     get(ref(db, `${userPath}`)).then((data) => {
-      const target = targetReplace();
+      const newTartget = ranTarget();
       const newPoint = data.val().point ? data.val().point + 1 : 1;
       const oldRate = data.val().hitRate || 0;
       let newRate = hitRate;
@@ -171,11 +220,22 @@ export default function Main() {
       updates[`${userPath}/point`] = newPoint;
       updates[`${userPath}/hitRate`] = newRate;
       updates[`${userPath}/score`] = score;
-      updates[`room/${roomData.uid}/ranPos`] = [target.ranPosX, target.ranPosY];
-      updates[`room/${roomData.uid}/ranSize`] = target.ranSize;
+      updates[`room/${roomData.uid}/target/${uid}/pos`] = newTartget.pos;
+      updates[`room/${roomData.uid}/target/${uid}/size`] = newTartget.size;
 
       update(ref(db), updates);
     });
+  };
+
+  //개별 재배치
+  const ranTarget = () => {
+    let ranPosX = Math.floor(Math.random() * 70) + 10;
+    let ranPosY = Math.floor(Math.random() * 70) + 10;
+    let ranSize = Math.floor(Math.random() * 10) + 20;
+    return {
+      pos: [ranPosX, ranPosY],
+      size: ranSize,
+    };
   };
 
   //카운터
@@ -282,18 +342,19 @@ export default function Main() {
   };
 
   const targetReplace = () => {
-    let arr = [];
+    let obj = {};
     for (let i = 0; i < 5; i++) {
-      let ranPosX = Math.floor(Math.random() * 65) + 35;
-      let ranPosY = Math.floor(Math.random() * 81) + 10;
-      let ranSize = Math.floor(Math.random() * 20) + 12;
-      arr.push({
+      let ranPosX = Math.floor(Math.random() * 70) + 10;
+      let ranPosY = Math.floor(Math.random() * 70) + 10;
+      let ranSize = Math.floor(Math.random() * 10) + 20;
+      const uid = shortid.generate();
+      obj[uid] = {
         pos: [ranPosX, ranPosY],
         size: ranSize,
-        uid: shortid.generate(),
-      });
+        uid,
+      };
     }
-    return arr;
+    return obj;
   };
 
   const onPlayGame = () => {
@@ -341,15 +402,23 @@ export default function Main() {
                 <div className="effect_bg" ref={gameBoxRef}></div>
                 <div className="time_counter">{timeTxt}</div>
                 {roomData.state === "start" && (
-                  <TargetBox
-                    onClick={onTargetHit}
-                    size={roomData.ranSize}
-                    pos={roomData.ranPos}
-                    className="target_box"
-                    ref={targetRef}
-                  >
-                    <SiTarget />
-                  </TargetBox>
+                  <>
+                    {roomData.target.map((el) => {
+                      return (
+                        <>
+                          <TargetBox
+                            key={el.uid}
+                            onClick={(e) => onTargetHit(e, el.uid)}
+                            size={el.size}
+                            pos={el.pos}
+                            className="target_box"
+                          >
+                            <SiTarget />
+                          </TargetBox>
+                        </>
+                      );
+                    })}
+                  </>
                 )}
               </div>
             ) : (
