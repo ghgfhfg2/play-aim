@@ -1,0 +1,7 @@
+@import url("https://fonts.googleapis.com/css2?family=Oswald&display=swap");
+html {
+  --m-color: #1D4044;
+  --p-color: #2C7A7B; }
+
+.com-tab-box .tab-content {
+  display: none; }

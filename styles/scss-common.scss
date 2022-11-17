@@ -1,0 +1,69 @@
+$mobile-wid: 760px;
+$p-color: #1890ff; //포인트컬러
+$font-size: 12px; // 기본 폰트사이즈
+$fon-color: #666; //기본 폰트색상
+$bd-color: #e2e2e2; //보더컬러
+
+html {
+  --m-color: #1D4044;
+  --p-color: #2C7A7B;
+}
+
+@import url("https://fonts.googleapis.com/css2?family=Oswald&display=swap");
+.com-tab-box .tab-content {
+  display: none;
+}
+
+@mixin mobile {
+  @media (max-width: #{$mobile-wid}) {
+    @content;
+  }
+}
+
+@mixin grid($col, $gap) {
+  display: grid;
+  grid-template-columns: $col;
+  gap: $gap;
+}
+
+@mixin flex($j: flex-start, $a: center, $d: row) {
+  display: flex;
+  justify-content: $j;
+  align-items: $a;
+  flex-direction: $d;
+}
+
+@mixin after($w, $h) {
+  content: "";
+  display: inline-block;
+  position: absolute;
+  width: $w;
+  height: $h;
+}
+@mixin before($w, $h) {
+  content: "";
+  display: inline-block;
+  position: absolute;
+  width: $w;
+  height: $h;
+  @content;
+}
+
+@mixin font($s: $fon-size, $w: normal, $c: $fon-color) {
+  font-size: $s;
+  font-weight: $w;
+  color: $c;
+}
+
+@mixin lastMr0($mg) {
+  margin-right: $mg;
+  &:last-child {
+    margin-right: 0;
+  }
+}
+@mixin lastMb0($mg) {
+  margin-bottom: $mg;
+  &:last-child {
+    margin-bottom: 0;
+  }
+}

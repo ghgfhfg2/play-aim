@@ -1,0 +1,9 @@
+{
+  "rules": {
+    "room": {
+      ".indexOn": ["roomName","play"]
+    },
+    ".read": true,
+    ".write": "auth!=null"
+  }
+}
