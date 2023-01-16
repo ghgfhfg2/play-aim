@@ -149,7 +149,7 @@ export default function Main() {
         equalTo(code)
       );
       get(rRef).then((data) => {
-        //.
+        //
         let room = {};
         for (const key in data.val()) {
           room = {
